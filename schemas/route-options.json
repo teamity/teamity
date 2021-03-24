@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string"
+    },
+    "method": {
+      "type": "string",
+      "default": "TEAMITY"
+    },
+    "schema": {
+      "type": "object",
+      "default": {}
+    },
+    "$usePrefix": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": ["url"]
+}

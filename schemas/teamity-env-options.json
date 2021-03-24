@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "TEAMITY_PINO_LEVEL": {
+      "enum": ["fatal", "error", "warn", "info", "debug", "trace", "silent"]
+    },
+    "TEAMITY_PINO_PRETTY": { "type": "boolean" },
+    "TEAMITY_ROUTER_PREFIX": { "type": "string", "default": "" },
+    "TEAMITY_SERVER_PORT": { "type": "number" },
+    "TEAMITY_SERVER_HOST": { "type": "string" }
+  }
+}
