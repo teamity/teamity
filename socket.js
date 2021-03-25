@@ -8,20 +8,19 @@ const {
   kSocketRaw,
   kSocketQuery,
   kSocketSession,
-  kSocketCache,
   kSocketJoins,
 
   kTeamityRooms
 } = require('./symbols')
 
 const { initSocketProperties } = require('./properties')
+const pkgSplit = Buffer.from('\n')
 
 function Socket (raw, query) {
   this[kSocketId] = nanoid()
   this[kSocketRaw] = raw
   this[kSocketQuery] = {}
   this[kSocketSession] = {}
-  this[kSocketCache] = Buffer.alloc(0)
   this[kSocketJoins] = {}
 
   initSocketProperties.call(this)
@@ -45,15 +44,7 @@ Socket.prototype.send = function (topic, payload) {
     topic = Buffer.from(topic)
   }
 
-  // const toLen = 1 + topic.byteLength + 2 + payload.byteLength
-  const tLen = Buffer.alloc(1)
-  tLen.writeInt8(topic.byteLength)
-
-  const pLen = Buffer.alloc(2)
-  pLen.writeUInt16BE(payload.byteLength)
-
-  const pkg = Buffer.concat([tLen, topic, pLen, payload])
-
+  const pkg = Buffer.concat([topic, pkgSplit, payload])
   this.$raw.send(pkg)
 }
 
@@ -100,39 +91,16 @@ function _onMessage (payload) {
     payload = Buffer.from(payload)
   }
 
-  this[kSocketCache] = Buffer.concat([this[kSocketCache], payload])
+  const pkgIdx = payload.indexOf(pkgSplit)
 
-  const cache = this[kSocketCache]
-  let offset = 0
-
-  if (cache.byteLength < offset + 1) {
+  if (pkgIdx < 0) {
     return
   }
 
-  const tLen = cache.readInt8(offset)
-  offset += tLen + 1
+  const topic = payload.slice(0, pkgIdx)
+  const body = payload.slice(pkgIdx + pkgSplit.byteLength)
 
-  if (cache.byteLength < offset + 2) {
-    return
-  }
-
-  const pLen = cache.readUInt16BE(offset)
-  offset += pLen + 2
-
-  if (cache.byteLength < offset) {
-    return
-  }
-
-  offset = 1
-  const topic = cache.slice(offset, offset + tLen).toString('utf-8')
-
-  offset += tLen + 2
-  const body = cache.slice(offset, offset + pLen)
-
-  offset += pLen
-  this[kSocketCache] = cache.slice(offset)
-
-  this.emit('decode', topic, body)
+  this.emit('decode', topic.toString('utf-8'), body)
 }
 
 function _onClose () {

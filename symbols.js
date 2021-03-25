@@ -27,7 +27,6 @@ module.exports = {
   kQueueReplies: Symbol('queue.replies'),
 
   kSocketTeamity: Symbol('socket.teamity'),
-  kSocketCache: Symbol('socket.cache'),
   kSocketId: Symbol('socket.id'),
   kSocketRaw: Symbol('socket.raw'),
   kSocketQuery: Symbol('socket.query'),
