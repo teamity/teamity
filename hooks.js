@@ -8,12 +8,19 @@ const {
   kHookLevel,
   kTeamityParent,
   kRouteScope,
-  kRouteReply
+  kRouteReply,
+  kSocketTeamity
 } = require('./symbols')
 
 const routeHooks = ['onBeforeHandler']
 
-const scopeHooks = ['onClose', 'onError', 'onRoute']
+const scopeHooks = [
+  'onClose',
+  'onError',
+  'onRoute',
+  'onBeforeConnection',
+  'onAfterDisconnection'
+]
 
 const hooks = {}
 
@@ -151,6 +158,16 @@ function generalLifecycle (hookName) {
   }
 }
 
+function onBeforeConnectionFlow (next) {
+  const teamity = this[kSocketTeamity]
+  runHooks.call(teamity, 'onBeforeConnection', teamity, next, this)
+}
+
+function onAfterDisconnectionFlow (next) {
+  const teamity = this[kSocketTeamity]
+  runHooks.call(teamity, 'onAfterDisconnection', teamity, next, this)
+}
+
 module.exports = {
   initHooks,
   attachHooks,
@@ -159,6 +176,7 @@ module.exports = {
   throwError,
 
   onRouteFlow,
-
+  onBeforeConnectionFlow,
+  onAfterDisconnectionFlow,
   onBeforeHandlerFlow: generalLifecycle('onBeforeHandler')
 }

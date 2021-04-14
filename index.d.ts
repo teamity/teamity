@@ -36,8 +36,11 @@ export {
   RouteHandler,
   OnRouteCallback,
   OnBeforeHandlerCallback,
+  OnBeforeConnectionCallback,
+  OnAfterDisconnectionCallback,
   SchemaOptions,
-  Route
+  Route,
+  Socket
 } from './types/route'
 
 export { SerializerDone, SerializerCallback } from './types/serializer'

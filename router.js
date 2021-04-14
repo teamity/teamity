@@ -23,7 +23,12 @@ const { Socket } = require('./socket')
 const { Route } = require('./route')
 const { Scope } = require('./scope')
 const { initReply } = require('./reply')
-const { throwError, onBeforeHandlerFlow } = require('./hooks')
+const {
+  throwError,
+  onBeforeHandlerFlow,
+  onBeforeConnectionFlow,
+  onAfterDisconnectionFlow
+} = require('./hooks')
 const { promisify } = require('./utils')
 
 const router = new TrekRouter()
@@ -31,16 +36,28 @@ const method = 'TEAMITY'
 
 function addSocket () {
   const teamity = this[kSocketTeamity]
-  const sockets = teamity[kTeamitySockets]
-  sockets[this.$id] = this
+  flows.series(this, [onBeforeConnectionFlow], err => {
+    if (err) {
+      throwError(teamity, err)
+      this.$raw.close()
+    } else {
+      const sockets = teamity[kTeamitySockets]
+      sockets[this.$id] = this
+    }
+  })
 }
 
 function delSocket () {
   const teamity = this[kSocketTeamity]
   const sockets = teamity[kTeamitySockets]
   delete sockets[this.$id]
-
   this.$raw.close()
+
+  flows.series(this, [onAfterDisconnectionFlow], err => {
+    if (err) {
+      throwError(teamity, err)
+    }
+  })
 }
 
 function recvSocket (topic, body) {
@@ -109,8 +126,8 @@ async function onHandlerFlow (next) {
 }
 
 function onWsComing (ws, req) {
-  const { query } = req
-  const skt = new Socket(ws, query)
+  const { query, session = null } = req
+  const skt = new Socket(ws, query, session)
   skt[kSocketTeamity] = this
 
   skt.on('close', delSocket)

@@ -1,6 +1,7 @@
 import PINO from 'pino'
 import { JSONSchemaType } from 'ajv'
 import { Teamity } from './teamity'
+import WebSocket from 'ws'
 
 declare type Known =
   | Record<string, any>
@@ -26,6 +27,13 @@ export interface Reply {
   emit(event: string, body: any): Reply
 }
 
+export interface Socket {
+  $id: Readonly<string>
+  $raw: Readonly<WebSocket>
+  $query: Readonly<Record<string, unknown>>
+  $session: Readonly<Record<string, unknown>>
+}
+
 export type RouteHandler<S> = (
   this: S,
   scope: Scope,
@@ -41,6 +49,16 @@ export type OnBeforeHandlerCallback<T> = (
   this: T,
   scope: Scope,
   rep: Reply
+) => Promise<void> | void
+
+export type OnBeforeConnectionCallback<T> = (
+  this: T,
+  skt: Socket
+) => Promise<void> | void
+
+export type OnAfterDisconnectionCallback<T> = (
+  this: T,
+  skt: Socket
 ) => Promise<void> | void
 
 export interface SchemaOptions {

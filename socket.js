@@ -16,11 +16,11 @@ const {
 const { initSocketProperties } = require('./properties')
 const pkgSplit = Buffer.from('\n')
 
-function Socket (raw, query) {
+function Socket (raw, query, session) {
   this[kSocketId] = nanoid()
   this[kSocketRaw] = raw
   this[kSocketQuery] = {}
-  this[kSocketSession] = {}
+  this[kSocketSession] = session || {}
   this[kSocketJoins] = {}
 
   initSocketProperties.call(this)
@@ -32,6 +32,9 @@ function Socket (raw, query) {
   this.$raw.on('close', this.emit.bind(this, 'close'))
   this.$raw.on('error', this.emit.bind(this, 'error'))
   this.$raw.on('message', this.emit.bind(this, 'message'))
+  this.$raw.on('ping', () => {
+    this.$raw.pong()
+  })
 
   this.on('message', _onMessage.bind(this))
   this.on('close', _onClose.bind(this))

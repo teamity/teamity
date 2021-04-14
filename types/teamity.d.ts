@@ -76,4 +76,12 @@ export interface Teamity {
     name: 'onBeforeHandler',
     fn: ROTE.OnBeforeHandlerCallback<ROTE.Route>
   ): Teamity
+  addHook(
+    name: 'onBeforeConnection',
+    fn: ROTE.OnBeforeConnectionCallback<Teamity>
+  )
+  addHook(
+    name: 'onAfterDisconnection',
+    fn: ROTE.OnAfterDisconnectionCallback<Teamity>
+  )
 }
